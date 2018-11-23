@@ -32,6 +32,7 @@
 		var walls = [];
 		var star;
 		var winners = {};
+		var winnerText;
 		var refreshTimer = null;
 
 		function preload ()
@@ -47,6 +48,8 @@
 			phaser = this;
 			this.game.antialias = true;
 			this.game.clearBeforeRender = true;
+			winnerText = this.add.text( 500, 100, "Winners!" );
+			winnerText.setScale( 2 );
 			startGame();
 		}
 
@@ -64,7 +67,9 @@
 						if( marbleObj.object.x > 320 && marbleObj.object.x < 480 ) {
 							// Winner!
 							winners[ marbleObj.object.name ] = true;
+							client.say("#{{ username }}", "/me " + marbleObj.object.name + " is a WINNER!" );
 							console.log( Object.keys( winners ) );
+							winnerText.setText( "Winners!\n" + Object.keys( winners ).join( "\n" ) );
 						}
 					}
 				}
