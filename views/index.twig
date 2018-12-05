@@ -7,7 +7,7 @@
 			type: Phaser.AUTO,
 			width: 800,
 			height: 800,
-    	transparent: true,
+			transparent: true,
 			parent: 'fluffinko',
 			physics: {
 					default: 'arcade',
@@ -34,6 +34,7 @@
 		var winners = {};
 		var winnerText;
 		var refreshTimer = null;
+		var emoteList = {};
 
 		function preload ()
 		{
@@ -103,15 +104,33 @@
 			star = phaser.physics.add.staticImage( 400, 760, "star" );
 		}
 
-		function addUser( username ) {
+		function addUser( username, emote = "" ) {
+			var marbleImage = "wizball";
+			var marbleScale = 1;
+			if( emote ) {
+				if( !emoteList[ emote ] ) {
+					emoteList[ emote ] = true;
+					var emoteUrl = "https://static-cdn.jtvnw.net/emoticons/v1/" + emote + "/1.0";
+					phaser.load.image( "emote_" + emote, emoteUrl );
+					phaser.load.start();
+					setTimeout( () => {
+						if( !balls[ username ] ) {
+							addUser( username, emote );
+						}
+					}, 500 );
+					return;
+				}
+				marbleImage = "emote_" + emote;
+			}
 			if( !balls[ username ] ) {
 				var dropPosition = getRandomInt(768);
 				// var userMarble = phaser.physics.add.image(dropPosition, 65, 'wizball');
-				var userMarble = collisions.create(dropPosition, -165, 'wizball');
+				var userMarble = collisions.create(dropPosition, -165, marbleImage);
 				var userText = phaser.add.text(dropPosition, -190, username);
 				userText.setOrigin( 0.5 );
 				userMarble.name = username;
 				userMarble.setCircle(16);
+				console.log( userMarble );
 				userMarble.setDrag( 0, 0 );
 				userMarble.body.allowDrag = false;
 				// userMarble.body.stopVelocityOnCollide = false;
@@ -167,8 +186,8 @@
 			client.connect();
 
 			client.on("chat", function (channel, userstate, message, self) {
-				if( message == "!boingboing" ) {
-					addUser( userstate["display-name"] );
+				if( message == "!boingboing" || message.startsWith( "!boingboing " ) ) {
+					addUser( userstate["display-name"], userstate.emotes ? Object.keys( userstate.emotes )[ 0 ] : "" );
 
 					$("#fluffinko").show();
 					if( refreshTimer ) {
